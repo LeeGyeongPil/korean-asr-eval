@@ -352,7 +352,7 @@ my-lab@2 05979c04babb
 | `trn` | `경로 :: 전사` (id 는 파일 이름 줄기, 예: `sample/utt01.wav` → `utt01`) |
 | `txt` | 줄 번호가 id |
 
-파일 확장자로 형식을 고르고, `--ref-format`/`--hyp-format`(또는 `read_pairs(fmt=)`)로 지정할 수 있습니다. 원본 KsponSpeech 처럼 cp949 파일이면 `--encoding cp949` 를 줍니다. 참조와 가설의 id 가 어긋나면 조용히 넘어가지 않고 `IdMismatchError`(CLI 는 종료코드 2)를 냅니다.
+파일 확장자로 형식을 고르고, `--ref-format`/`--hyp-format`(또는 `read_pairs(fmt=)`)로 지정할 수 있습니다. 원본 KsponSpeech 처럼 cp949 파일이면 `--encoding cp949` 를 줍니다(참조만 cp949 면 `--ref-encoding cp949`, 가설만이면 `--hyp-encoding cp949`). 참조와 가설의 id 가 어긋나면 조용히 넘어가지 않고 `IdMismatchError`(CLI 는 종료코드 2)를 냅니다.
 
 ### 결과 읽는 법
 
@@ -387,7 +387,7 @@ uv run pytest -q
 uv run korean-asr-eval demo
 ```
 
-테스트는 네트워크 없이 돌아갑니다. 이 레포 개발 환경에서 `uv run pytest -q` 는 61개 통과했습니다.
+테스트는 네트워크 없이 돌아갑니다. 이 레포 개발 환경에서 `uv run pytest -q` 는 65개 통과했습니다.
 
 ## 더 알아보기 (2026-11-10 접속 확인)
 

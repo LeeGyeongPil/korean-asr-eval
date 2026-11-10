@@ -1,6 +1,6 @@
 [project]
 name = "korean-asr-eval"
-version = "0.1.0"
+version = "0.1.1"
 description = "Pin the text-normalization rules behind Korean ASR CER, and see how much they change scores and model rankings (jiwer-based)."
 readme = "README.md"
 license = { text = "MIT" }
