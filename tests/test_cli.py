@@ -100,3 +100,66 @@ def test_argparse_errors_exit_2() -> None:
     with pytest.raises(SystemExit) as exc:
         main(["score"])
     assert exc.value.code == 2
+
+
+# --- split encodings: cp949 reference (original KsponSpeech) + UTF-8 hypotheses ---
+
+
+def _cp949_ref_and_utf8_hyps(tmp_path: Path) -> tuple[Path, Path, Path]:
+    ref = tmp_path / "ref.tsv"
+    ref.write_bytes("a\t안녕\nb\t반가워\n".encode("cp949"))
+    hyp1 = tmp_path / "h1.tsv"
+    hyp1.write_text("a\t안녕\nb\t반가워\n", encoding="utf-8")
+    hyp2 = tmp_path / "h2.tsv"
+    hyp2.write_text("a\t안녕\nb\t반가요\n", encoding="utf-8")
+    return ref, hyp1, hyp2
+
+
+def test_score_ref_encoding_cp949_with_utf8_hyp(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    ref, hyp1, _ = _cp949_ref_and_utf8_hyps(tmp_path)
+    code = main(["score", "--ref", str(ref), "--hyp", str(hyp1), "--ref-encoding", "cp949", "--json"])
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "0.0" in out  # identical text -> CER 0
+
+
+def test_compare_hyp_encoding_applies_to_all_hyps(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    ref, hyp1, hyp2 = _cp949_ref_and_utf8_hyps(tmp_path)
+    code = main([
+        "compare", "--ref", str(ref), "--ref-encoding", "cp949",
+        "--hyp", f"x={hyp1}", "--hyp", f"y={hyp2}", "--hyp-encoding", "utf-8",
+    ])
+    assert code == 0
+    assert "x" in capsys.readouterr().out
+
+
+def test_encoding_shortcut_still_applies_to_both(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    ref = tmp_path / "r.tsv"
+    ref.write_bytes("a\t안녕\n".encode("cp949"))
+    hyp = tmp_path / "h.tsv"
+    hyp.write_bytes("a\t안녕\n".encode("cp949"))
+    assert main(["score", "--ref", str(ref), "--hyp", str(hyp), "--encoding", "cp949"]) == 0
+
+
+def test_cli_decode_error_names_real_options(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    ref, hyp1, _ = _cp949_ref_and_utf8_hyps(tmp_path)
+    assert main(["score", "--ref", str(ref), "--hyp", str(hyp1)]) == 2
+    err = capsys.readouterr().err
+    assert "--ref-encoding" in err and "--encoding" in err
+    assert "pass encoding=" not in err
+    # hypothesis side: UTF-8 ref, cp949 hyp
+    ref2 = tmp_path / "r2.tsv"
+    ref2.write_text("a\t안녕\n", encoding="utf-8")
+    hyp2 = tmp_path / "h3.tsv"
+    hyp2.write_bytes("a\t안녕\n".encode("cp949"))
+    assert main(["score", "--ref", str(ref2), "--hyp", str(hyp2)]) == 2
+    err = capsys.readouterr().err
+    assert "--hyp-encoding" in err and "pass encoding=" not in err

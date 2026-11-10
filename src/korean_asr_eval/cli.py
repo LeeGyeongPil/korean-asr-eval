@@ -32,7 +32,26 @@ DEMO_SYSTEMS = ("model-a", "model-b", "model-c")
 def _add_io_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--ref-format", default="auto", choices=("auto", *FORMATS), help="reference file format")
     p.add_argument("--hyp-format", default="auto", choices=("auto", *FORMATS), help="hypothesis file format")
-    p.add_argument("--encoding", default="utf-8", help="text encoding of input files (e.g. cp949)")
+    p.add_argument("--encoding", default=None,
+                   help="text encoding of both input files (default utf-8; e.g. cp949)")
+    p.add_argument("--ref-encoding", default=None,
+                   help="encoding of the reference file only (overrides --encoding)")
+    p.add_argument("--hyp-encoding", default=None,
+                   help="encoding of every hypothesis file only (overrides --encoding)")
+
+
+def _read(path: str, fmt: str, encoding: str | None, shared: str | None, role: str) -> dict[str, str]:
+    """Read one file; ``encoding`` is the per-role option, ``shared`` is --encoding."""
+    chosen = encoding or shared or "utf-8"
+    try:
+        return read_pairs(path, fmt, chosen)
+    except InputFormatError as exc:
+        if isinstance(exc.__cause__, UnicodeDecodeError):  # name the real CLI options
+            raise InputFormatError(
+                f"{Path(path).name} is not valid {chosen}; pass --{role}-encoding "
+                f"(or --encoding) with the file's encoding, for example cp949"
+            ) from exc
+        raise
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -112,8 +131,8 @@ def _cmd_normalize(args: argparse.Namespace) -> str:
 
 
 def _cmd_score(args: argparse.Namespace) -> str:
-    refs = read_pairs(args.ref, args.ref_format, args.encoding)
-    hyps = read_pairs(args.hyp, args.hyp_format, args.encoding)
+    refs = _read(args.ref, args.ref_format, args.ref_encoding, args.encoding, "ref")
+    hyps = _read(args.hyp, args.hyp_format, args.hyp_encoding, args.encoding, "hyp")
     result = score(refs, hyps, args.profile)
     fmt = "json" if args.json else args.format
     if fmt == "json":
@@ -131,13 +150,13 @@ def _split_hyp(spec: str) -> tuple[str, str]:
 
 
 def _cmd_compare(args: argparse.Namespace) -> str:
-    refs = read_pairs(args.ref, args.ref_format, args.encoding)
+    refs = _read(args.ref, args.ref_format, args.ref_encoding, args.encoding, "ref")
     systems = {}
     for spec in args.hyp:
         name, path = _split_hyp(spec)
         if name in systems:
             raise InputFormatError(f"system name {name!r} given twice; use NAME=FILE with distinct names")
-        systems[name] = read_pairs(path, args.hyp_format, args.encoding)
+        systems[name] = _read(path, args.hyp_format, args.hyp_encoding, args.encoding, "hyp")
     profiles = args.profile or list(DEFAULT_PROFILES)
     return _render_comparison(compare(refs, systems, profiles, top_n=args.top), args.format)
 
