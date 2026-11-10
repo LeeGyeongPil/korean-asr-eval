@@ -1,0 +1,42 @@
+[project]
+name = "korean-asr-eval"
+version = "0.1.0"
+description = "Pin the text-normalization rules behind Korean ASR CER, and see how much they change scores and model rankings (jiwer-based)."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+keywords = ["asr", "stt", "korean", "cer", "wer", "evaluation", "jiwer", "normalization"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: Korean",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Typing :: Typed",
+]
+dependencies = ["jiwer==4.0.0"]
+
+[project.urls]
+Homepage = "https://github.com/LeeGyeongPil/korean-asr-eval"
+Issues = "https://github.com/LeeGyeongPil/korean-asr-eval/issues"
+
+[project.scripts]
+korean-asr-eval = "korean_asr_eval.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8.3"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/korean_asr_eval"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
