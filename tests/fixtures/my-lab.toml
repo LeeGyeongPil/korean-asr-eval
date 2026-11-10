@@ -1,0 +1,8 @@
+name = "my-lab"
+version = 2
+extends = "basic@1"
+description = "Team rules: hanja numerals and a unit symbol spelled out."
+
+[replace]
+"三十" = "삼십"
+"㎏" = "킬로그램"
