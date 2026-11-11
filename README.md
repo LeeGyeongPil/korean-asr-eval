@@ -1,5 +1,7 @@
 # korean-asr-eval
 
+**한국어** | [English](README.en.md)
+
 > **English summary** — A small Python library and CLI that pins the text-normalization rules behind Korean speech-recognition error rates (CER/WER) as named, versioned, fingerprinted *profiles* such as `kspon-phonetic@1`, and shows how much a profile changes scores and model rankings. Distances and substitution/deletion/insertion counts come from [jiwer](https://github.com/jitsi/jiwer) 4.0.0; this package does not reimplement CER. Install: `pip install git+https://github.com/LeeGyeongPil/korean-asr-eval`, then run `korean-asr-eval demo` (offline, bundled hand-written practice data). Python 3.11+, one runtime dependency (`jiwer`).
 
 한국어 음성인식(STT) 결과를 채점할 때 **정규화 규칙을 `kspon-phonetic@1` 같은 이름·버전으로 고정**하고, 그 규칙이 점수와 모델 순위를 얼마나 바꾸는지 함께 보여 주는 파이썬 라이브러리 + 명령줄 도구입니다.
