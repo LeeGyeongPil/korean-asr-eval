@@ -54,6 +54,8 @@ ranking (best first):
 
 How to read it: lower CER is better. `none@1` is the "no normalization" baseline. The same three systems have model-b in first place under `kspon-spelling@1` and model-a under `kspon-phonetic@1`. **The models did not change; the scoring rules did.**
 
+In a ranking line, `<` means the left system has the lower CER; systems with equal CER are joined with ` = `. Systems that could not be scored (n/a) are left out of the order and listed at the end as `(n/a: name)`.
+
 ### Synthetic practice data
 
 The reference and hypothesis files used by `demo` are **short sentences written by hand for this project**. They are neither raw KsponSpeech nor output from a real speech-recognition model. `model-a/b/c` are imaginary systems, and the numbers in the table are **not real model performance**. The process that computes the numbers (jiwer), however, is real. In real use, feed in your own model's output files (see "Input formats" below).
@@ -389,7 +391,7 @@ uv run pytest -q
 uv run korean-asr-eval demo
 ```
 
-The tests run without a network. In this repo's development environment, `uv run pytest -q` passed 65 tests.
+The tests run without a network. In this repo's development environment, `uv run pytest -q` passed 67 tests.
 
 ## Learn more (links checked 2026-11-10)
 
