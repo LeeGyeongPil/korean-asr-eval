@@ -67,6 +67,25 @@ def _flip_line(f: Any) -> str:
     )
 
 
+def _rank_line(c: Comparison, profile: str) -> str:
+    """Ranking text: ' = ' joins CER ties, ' < ' separates; n/a systems are listed apart."""
+    from .compare import _EPS
+
+    ranked = [s for s in c.ranks[profile] if c.table[s][profile].cer is not None]
+    na = [s for s in c.ranks[profile] if c.table[s][profile].cer is None]
+    text = ""
+    for i, s in enumerate(ranked):
+        if i:
+            gap = c.table[s][profile].cer - c.table[ranked[i - 1]][profile].cer
+            text += " = " if abs(gap) <= _EPS else " < "
+        text += s
+    if not na:
+        return text
+    if not ranked:
+        return "n/a: " + ", ".join(na)
+    return f"{text} (n/a: {', '.join(na)})"
+
+
 def comparison_text(c: Comparison) -> str:
     head = ["system"] + c.profiles
     rows = [[s] + [_cell(c, s, p) for p in c.profiles] for s in c.systems]
@@ -81,7 +100,7 @@ def comparison_text(c: Comparison) -> str:
     out.append("")
     out.append("profile fingerprints: " + ", ".join(f"{p}={c.fingerprints[p]}" for p in c.profiles))
     out.append("ranking (best first):")
-    out += [f"  {p}: " + " < ".join(c.ranks[p]) for p in c.profiles]
+    out += [f"  {p}: " + _rank_line(c, p) for p in c.profiles]
     out.append("")
     if c.rank_flips:
         out += [_flip_line(f) for f in c.rank_flips]
@@ -108,7 +127,7 @@ def comparison_markdown(c: Comparison) -> str:
     for s in c.systems:
         out.append(f"| {s} | " + " | ".join(_cell(c, s, p) for p in c.profiles) + " |")
     out += ["", "### Ranking (best first)", ""]
-    out += [f"- `{p}` (fp `{c.fingerprints[p]}`): " + " < ".join(c.ranks[p]) for p in c.profiles]
+    out += [f"- `{p}` (fp `{c.fingerprints[p]}`): " + _rank_line(c, p) for p in c.profiles]
     out += ["", "### Rank flips", ""]
     if c.rank_flips:
         out += [f"- {_flip_line(f)}" for f in c.rank_flips]

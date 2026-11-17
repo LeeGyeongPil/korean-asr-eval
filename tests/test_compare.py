@@ -74,3 +74,24 @@ def test_compare_input_errors(fixtures_dir: Path) -> None:
         compare(refs, systems, ["basic@1", "basic@1"])
     with pytest.raises(InputFormatError, match="at least one profile"):
         compare(refs, systems, [])
+
+
+def test_ranking_ties_and_na() -> None:
+    refs = {"u1": "오늘 날씨가 좋네요"}
+    systems = {
+        "zeta": {"u1": "오늘 날씨가 좋내요"},
+        "alpha": {"u1": "오늘 날씨가 조네요"},
+        "best": {"u1": "오늘 날씨가 좋네요"},
+    }
+    c = compare(refs, systems, ["none@1"])
+    for out in (c.to_text(), c.to_markdown()):
+        assert "best < alpha = zeta" in out
+    assert c.to_dict()["ranks"]["none@1"] == ["best", "alpha", "zeta"]
+
+
+def test_ranking_na_systems() -> None:
+    from korean_asr_eval.report import _rank_line
+
+    c = compare({"u1": "..."}, {"b": {"u1": ""}, "a": {"u1": "아"}}, ["none@1", "basic@1"])
+    assert _rank_line(c, "basic@1") == "n/a: a, b"
+    assert "basic@1: n/a: a, b" in c.to_text()
